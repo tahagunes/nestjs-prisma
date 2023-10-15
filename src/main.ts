@@ -6,7 +6,14 @@ import { PrismaClientExceptionFilter } from './prisma-client-exception/prisma-cl
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // binds ValidationPipe to the entire application
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true, // 👈 automatically transform payloads
+      transformOptions: {
+        enableImplicitConversion: true, // 👈  transform based on TS type
+      },
+    }),
+  );
    // 👇 apply transform to all responses
    app.useGlobalInterceptors(new ClassSerializerInterceptor(app.get(Reflector)));
    // 👇 apply PrismaClientExceptionFilter to entire application, requires HttpAdapterHost because it extends BaseExceptionFilter

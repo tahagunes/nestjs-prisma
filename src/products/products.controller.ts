@@ -1,5 +1,5 @@
 //src/products/products.controller.ts
-import { Prisma, Product } from '@prisma/client';
+import { Product } from '@prisma/client';
 import {
   Controller,
   Get,
@@ -23,10 +23,8 @@ import {
 import { ConnectionArgs } from 'src/page/connection-args.dto';
 import { Page } from 'src/page/page.dto';
 import { ApiPageResponse } from 'src/page/api-page-response.decorator';
-import { findManyCursorConnection } from '@devoxa/prisma-relay-cursor-connection';
 @Controller('products')
 export class ProductsController {
-  prisma: any;
   constructor(private readonly productsService: ProductsService) { }
 
   @Post()
@@ -39,29 +37,8 @@ export class ProductsController {
 
   @Get('page')
   @ApiPageResponse(ProductEntity)
-  async findPage(connectionArgs: ConnectionArgs) {
-    const where: Prisma.ProductWhereInput = {
-      published: true,
-     };
-    return findManyCursorConnection(
-      (args) =>
-        this.prisma.product.findMany({
-          ...args,
-          where: where,
-        }),
-      () =>
-        this.prisma.product.count({
-          where: where,
-        }),
-      connectionArgs,
-      {
-        recordToEdge: (record) => ({
-          node: new ProductEntity(record), // 👈 instance to transform price
-        }),
-      },
-    );
-    
-    return new Page<ProductEntity>(productPage); // 👈 instance as this object is returned
+  async findPage(@Query() connectionArgs: ConnectionArgs) {
+    return this.productsService.findPage(connectionArgs);
   }
 
   @Get()
